@@ -8,6 +8,7 @@ import { getChapterMenuItems, hitChapterMenuItem } from "./ChapterMenu.js";
 import { UnlockStore } from "./UnlockStore.js";
 import { getEndingAction, isEndingCardReady } from "./EndingActions.js";
 import { getEndingCardRect, hitEndingCardRect } from "./EndingCard.js";
+import { AudioManager } from "./AudioManager.js";
 
 export class Game {
   constructor({ canvas, chapters, config }) {
@@ -18,12 +19,15 @@ export class Game {
     this.renderer = new CanvasRenderer(canvas, config);
     this.input = new InputManager(canvas, config);
     this.unlockStore = new UnlockStore();
+    this.audio = new AudioManager(config.audio);
     this.phase = "splash";
     this.choiceRects = [];
     this.chapterMenuItems = [];
     this.endingStartedAt = null;
     this.endingNodeKey = null;
     this.endingAction = null;
+    this.transitionStartedAt = null;
+    this._bgmStarted = false;
   }
 
   start() {
@@ -32,6 +36,16 @@ export class Game {
   }
 
   handlePress(point) {
+    const elapsed = performance.now();
+    this.audio.unlock();
+    if (!this._bgmStarted && this.config.audio?.bgm) {
+      this.audio.playBgm(this.config.audio.bgm);
+      this._bgmStarted = true;
+    }
+    if (this.isTransitioning(elapsed)) {
+      return;
+    }
+
     if (this.phase === "splash") {
       if (isSplashStartTap(point, this.config.canvasWidth, this.config.canvasHeight)) {
         this.phase = "menu";
@@ -59,12 +73,14 @@ export class Game {
     if (node.kind === "choice") {
       const hit = hitChoiceRect(point, this.choiceRects);
       if (hit) {
+        this.startTransition(elapsed);
         this.flow.choose(hit.choice.id);
         this.syncEndingState();
       }
       return;
     }
 
+    this.startTransition(elapsed);
     this.flow.advance();
     this.syncEndingState();
   }
@@ -84,6 +100,7 @@ export class Game {
   }
 
   startChapter(chapter) {
+    this.startTransition(performance.now());
     this.activeChapter = chapter;
     this.flow = new StoryFlow(chapter.story);
     this.phase = "story";
@@ -122,6 +139,22 @@ export class Game {
     });
   }
 
+  isTransitioning(elapsed = performance.now()) {
+    if (this.transitionStartedAt === null) {
+      return false;
+    }
+    return elapsed - this.transitionStartedAt < this.config.transitionDurationMs;
+  }
+
+  startTransition(elapsed) {
+    this.renderer.captureSnapshot();
+    this.transitionStartedAt = elapsed;
+  }
+
+  finishTransition() {
+    this.transitionStartedAt = null;
+  }
+
   handleEndingCardPress() {
     if (this.endingAction?.type === "next_chapter") {
       const chapter = getChapterById(this.endingAction.chapterId);
@@ -150,11 +183,25 @@ export class Game {
       });
     } else {
       this.syncEndingState(elapsed);
-      this.choiceRects = this.renderer.renderStoryNode({
-        node: this.flow.currentNode,
-        elapsed,
-        endingAction: this.isEndingCardVisible(elapsed) ? this.endingAction : null
-      });
+
+      if (this.isTransitioning(elapsed)) {
+        const progress = (elapsed - this.transitionStartedAt) / this.config.transitionDurationMs;
+        this.choiceRects = this.renderer.renderTransition({
+          progress,
+          node: this.flow.currentNode,
+          elapsed,
+          endingAction: this.isEndingCardVisible(elapsed) ? this.endingAction : null
+        });
+      } else {
+        if (this.transitionStartedAt !== null) {
+          this.finishTransition();
+        }
+        this.choiceRects = this.renderer.renderStoryNode({
+          node: this.flow.currentNode,
+          elapsed,
+          endingAction: this.isEndingCardVisible(elapsed) ? this.endingAction : null
+        });
+      }
     }
 
     requestAnimationFrame(() => this.tick());

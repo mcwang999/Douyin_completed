@@ -8,6 +8,14 @@ globalThis.window = {
   devicePixelRatio: 1,
   addEventListener() {}
 };
+globalThis.document = {
+  createElement(tag) {
+    if (tag === "canvas") {
+      return { width: 0, height: 0, getContext() { return { drawImage() {} }; } };
+    }
+    return {};
+  }
+};
 
 function createContext() {
   const texts = [];

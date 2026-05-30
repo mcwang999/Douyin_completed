@@ -11,6 +11,7 @@ export class CanvasRenderer {
     this.imageCache = new Map();
     this.startImage = this.createImageState(config.startImage);
     this.choiceFrameImage = this.createImageState(config.startImage2);
+    this.snapshotCanvas = null;
     this.resize();
     window.addEventListener("resize", () => this.resize());
   }
@@ -19,6 +20,42 @@ export class CanvasRenderer {
     this.canvas.width = this.config.canvasWidth * this.pixelRatio;
     this.canvas.height = this.config.canvasHeight * this.pixelRatio;
     this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
+  }
+
+  captureSnapshot() {
+    if (!this.snapshotCanvas) {
+      this.snapshotCanvas = document.createElement("canvas");
+    }
+    this.snapshotCanvas.width = this.canvas.width;
+    this.snapshotCanvas.height = this.canvas.height;
+    const sctx = this.snapshotCanvas.getContext("2d");
+    sctx.drawImage(this.canvas, 0, 0);
+  }
+
+  renderTransition({ progress, node, elapsed, endingAction }) {
+    const ctx = this.ctx;
+    const width = this.config.canvasWidth;
+    const height = this.config.canvasHeight;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw old snapshot fading out
+    ctx.save();
+    ctx.globalAlpha = 1 - progress;
+    ctx.drawImage(
+      this.snapshotCanvas,
+      0, 0, this.snapshotCanvas.width, this.snapshotCanvas.height,
+      0, 0, width, height
+    );
+    ctx.restore();
+
+    // Draw new node fading in
+    ctx.save();
+    ctx.globalAlpha = progress;
+    const choiceRects = this.renderStoryNode({ node, elapsed, endingAction });
+    ctx.restore();
+
+    return choiceRects;
   }
 
   renderSplash({ elapsed }) {

@@ -6,6 +6,15 @@ import { getChapterById, chapters } from "../js/data/chapters.js";
 import { getEndingCardRect } from "../js/engine/EndingCard.js";
 import { Game } from "../js/engine/Game.js";
 
+globalThis.document = {
+  createElement(tag) {
+    if (tag === "canvas") {
+      return { width: 0, height: 0, getContext() { return { drawImage() {} }; } };
+    }
+    return {};
+  }
+};
+
 let currentTime = 0;
 
 globalThis.window = {
@@ -58,18 +67,23 @@ test("chapter one end2 card enters and unlocks chapter two after delay", () => {
   currentTime = 1000;
   const game = createGame();
   game.startChapter(getChapterById("chapter1"));
+
+  // Skip past the transition
+  currentTime = 1000 + CONFIG.transitionDurationMs;
+  game.finishTransition();
+
   game.flow.goTo("count_choice");
   game.flow.choose("wrong_count");
   game.syncEndingState();
 
   assert.deepEqual(game.unlockStore.getCompletedEndingKeys(), ["chapter1:end2"]);
 
-  currentTime = 1000 + CONFIG.endingNodeDurationMs - 1;
+  currentTime = 1000 + CONFIG.transitionDurationMs + CONFIG.endingNodeDurationMs - 1;
   game.handlePress(endingCardCenter(game.endingAction));
   assert.equal(game.activeChapter.id, "chapter1");
   assert.equal(game.flow.currentNode.id, "end2");
 
-  currentTime = 1000 + CONFIG.endingNodeDurationMs;
+  currentTime = 1000 + CONFIG.transitionDurationMs + CONFIG.endingNodeDurationMs;
   game.handlePress({ x: 10, y: 10 });
   assert.equal(game.activeChapter.id, "chapter1");
   assert.equal(game.flow.currentNode.id, "end2");
@@ -84,10 +98,15 @@ test("other ending cards restart the current chapter after delay", () => {
   currentTime = 1000;
   const game = createGame();
   game.startChapter(getChapterById("chapter1"));
+
+  // Skip past the transition
+  currentTime = 1000 + CONFIG.transitionDurationMs;
+  game.finishTransition();
+
   game.flow.goTo("end1");
   game.syncEndingState();
 
-  currentTime = 1000 + CONFIG.endingNodeDurationMs;
+  currentTime = 1000 + CONFIG.transitionDurationMs + CONFIG.endingNodeDurationMs;
   game.handlePress(endingCardCenter(game.endingAction));
 
   assert.equal(game.activeChapter.id, "chapter1");
@@ -98,26 +117,36 @@ test("chapter two end2 card enters and unlocks chapter three after delay", () =>
   currentTime = 1000;
   const game = createGame();
   game.startChapter(getChapterById("chapter2"));
+
+  // Skip past the transition
+  currentTime = 1000 + CONFIG.transitionDurationMs;
+  game.finishTransition();
+
   game.flow.goTo("end2");
   game.syncEndingState();
 
   assert.deepEqual(game.unlockStore.getCompletedEndingKeys(), ["chapter2:end2"]);
 
-  currentTime = 1000 + CONFIG.endingNodeDurationMs;
+  currentTime = 1000 + CONFIG.transitionDurationMs + CONFIG.endingNodeDurationMs;
   game.handlePress(endingCardCenter(game.endingAction));
 
   assert.equal(game.activeChapter.id, "chapter3");
-  assert.equal(game.flow.currentNode.id, "chapter3_placeholder");
+  assert.equal(game.flow.currentNode.id, "node1");
 });
 
 test("chapter two non-end2 ending cards restart chapter two", () => {
   currentTime = 1000;
   const game = createGame();
   game.startChapter(getChapterById("chapter2"));
+
+  // Skip past the transition
+  currentTime = 1000 + CONFIG.transitionDurationMs;
+  game.finishTransition();
+
   game.flow.goTo("end1");
   game.syncEndingState();
 
-  currentTime = 1000 + CONFIG.endingNodeDurationMs;
+  currentTime = 1000 + CONFIG.transitionDurationMs + CONFIG.endingNodeDurationMs;
   game.handlePress(endingCardCenter(game.endingAction));
 
   assert.equal(game.activeChapter.id, "chapter2");

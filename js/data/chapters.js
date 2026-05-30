@@ -108,13 +108,100 @@ const chapter2Story = {
 };
 
 const chapter3Story = {
-  startNodeId: "chapter3_placeholder",
+  startNodeId: "node1",
   nodes: [
     {
-      id: "chapter3_placeholder",
+      id: "node1",
+      kind: "scene",
+      image: "assets/images/chapter3/node1.png",
+      text: "闹钟叫碳基生物起床。",
+      next: "node1_choice"
+    },
+    {
+      id: "node1_choice",
+      kind: "choice",
+      image: "assets/images/chapter3/node1.png",
+      prompt: "闹钟准备播放哪一种叫醒方案？",
+      choices: [
+        { id: "mad_relativity", label: "疯狂相对论(3:00)", next: "end1" },
+        { id: "time_stream", label: "时空速流(7:59)", next: "node2" },
+        { id: "cyber_meditation", label: "赛博冥想(13:00)", next: "end5" }
+      ]
+    },
+    {
+      id: "node2",
+      kind: "scene",
+      image: "assets/images/chapter3/node2.png",
+      text: "上班迟到最后一分钟。",
+      next: "node2_choice"
+    },
+    {
+      id: "node2_choice",
+      kind: "choice",
+      image: "assets/images/chapter3/node2.png",
+      prompt: "用户狂怒，要揍你。",
+      choices: [
+        { id: "justice_fantasy", label: "正义使者狂想", next: "node3_1" },
+        { id: "mock_user", label: "嘲笑他", next: "node3_2" }
+      ]
+    },
+    {
+      id: "node3_1",
+      kind: "scene",
+      image: "assets/images/chapter3/node3_1.png",
+      text: "你觉得自己是守护工位准点率的正义使者。",
+      next: "node3_1_choice"
+    },
+    {
+      id: "node3_1_choice",
+      kind: "choice",
+      image: "assets/images/chapter3/node3_1.png",
+      prompt: "用户的手已经到了。",
+      choices: [
+        { id: "dodge", label: "反复横跳躲开", next: "end2" },
+        { id: "volume_200", label: "音量提高到200%", next: "end3" }
+      ]
+    },
+    {
+      id: "node3_2",
+      kind: "scene",
+      image: "assets/images/chapter3/node3_2.png",
+      text: "今天微信步数：0步。击败了全国0%的打工人，您真棒！",
+      next: "end4"
+    },
+    {
+      id: "end1",
       kind: "ending",
-      image: "assets/images/chapter3/node1_1.png",
-      text: "第三章框架已预留，等待资产和剧情。",
+      image: "assets/images/chapter3/end1.png",
+      text: "由于强行锁死时间流速，整个房间的物理定律彻底崩溃。",
+      next: null
+    },
+    {
+      id: "end2",
+      kind: "ending",
+      image: "assets/images/chapter3/end2.png",
+      text: "用户破防但爬起来正常上班了。",
+      next: null
+    },
+    {
+      id: "end3",
+      kind: "ending",
+      image: "assets/images/chapter3/end3.png",
+      text: "成功把用户吓得心脏骤停晕死。",
+      next: null
+    },
+    {
+      id: "end4",
+      kind: "ending",
+      image: "assets/images/chapter3/end4.png",
+      text: "那句你真棒让用户失去世俗的欲望，躺回被窝决定今天直接旷工，帮助他完成了一次完美的社会性关机。",
+      next: null
+    },
+    {
+      id: "end5",
+      kind: "ending",
+      image: "assets/images/chapter3/end5.png",
+      text: "用户直接睡到中午，被炒鱿鱼了，你被卖了。",
       next: null
     }
   ]

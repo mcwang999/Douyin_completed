@@ -27,11 +27,18 @@ test("chapter two end2 offers entry into chapter three", () => {
   });
 });
 
+test("chapter three end4 asks players to wait for the next chapter", () => {
+  assert.deepEqual(getEndingAction("chapter3", "end4"), {
+    type: "coming_soon",
+    label: "敬请期待下一章"
+  });
+});
+
 test("ending card waits for the configured delay before showing", () => {
   assert.equal(isEndingCardReady({ startedAt: 1000, elapsed: 5999, durationMs: 5000 }), false);
   assert.equal(isEndingCardReady({ startedAt: 1000, elapsed: 6000, durationMs: 5000 }), true);
 });
 
 test("ending card appears quickly after the ending plays", () => {
-  assert.equal(CONFIG.endingNodeDurationMs, 2000);
+  assert.equal(CONFIG.endingNodeDurationMs, 1000);
 });

@@ -15,6 +15,13 @@ export function getEndingAction(chapterId, endingId) {
     };
   }
 
+  if (chapterId === "chapter3" && endingId === "end4") {
+    return {
+      type: "coming_soon",
+      label: "敬请期待下一章"
+    };
+  }
+
   return {
     type: "restart",
     label: "点击重新开始"
