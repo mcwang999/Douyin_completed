@@ -37,6 +37,9 @@ function createContext() {
     moveTo() {},
     arcTo() {},
     closePath() {},
+    createRadialGradient() {
+      return { addColorStop() {} };
+    },
     measureText(text) {
       return { width: [...text].length * 12 };
     },

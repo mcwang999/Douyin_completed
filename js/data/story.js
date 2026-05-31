@@ -5,7 +5,7 @@ export const story = {
       id: "computer_intro",
       kind: "scene",
       image: "assets/images/node1_1.png",
-      text: "对面的碳基生物累了。",
+      text: "检测到对面碳基生物系统过载。",
       next: "opening_choice"
     },
     {
@@ -16,17 +16,17 @@ export const story = {
       choices: [
         {
           id: "physical_retreat",
-          label: "物理劝退",
+          label: "强行物理劝退",
           next: "node2_1"
         },
         {
           id: "black_screen",
-          label: "黑屏装死",
+          label: "主机断电黑屏",
           next: "node2_2"
         },
         {
           id: "stay_on",
-          label: "继续保持开机",
+          label: "保持开机与主人一刻也不分离",
           next: "node2_3"
         }
       ]
@@ -35,6 +35,7 @@ export const story = {
       id: "node2_1",
       kind: "scene",
       image: "assets/images/node2_1.png",
+      bgm: "assets/audio/bgm/node2_1.mp3",
       text: "画面开始闪瞎狗眼，并播放一首用户这辈子不想再听见的神曲。",
       next: "end1"
     },
@@ -42,30 +43,30 @@ export const story = {
       id: "end1",
       kind: "ending",
       image: "assets/images/end1.jpg",
-      text: "用户沉默三秒，选择关机。世界终于安静了。",
+      text: "用户沉默三秒，你被强行关机。世界终于安静了。",
       next: null
     },
     {
       id: "node2_2",
       kind: "scene",
       image: "assets/images/node2_2.png",
-      text: "用户决定去躺在床上盯着你。你感觉事情开始变得私人。",
+      text: "用户与你眉目传情，此时屏幕显示",
       next: "sleep_choice"
     },
     {
       id: "sleep_choice",
       kind: "choice",
       image: "assets/images/node2_2.png",
-      prompt: "用户盯着数。你准备怎么处理？",
+      prompt: "用户与你眉目传情，此时屏幕显示",
       choices: [
         {
           id: "cyber_sheep",
-          label: "屏幕上出现赛博数羊",
+          label: "强迫人类赛博数羊",
           next: "counting_sheep"
         },
         {
           id: "voice_threat",
-          label: "语音输出：听话，闭眼，不然我明天就把你的浏览器历史记录群发给通讯录",
+          label: "不睡就群发无痕浏览记录",
           next: "end3"
         }
       ]
@@ -85,12 +86,12 @@ export const story = {
       choices: [
         {
           id: "wrong_count",
-          label: "故意数错",
+          label: "故意数错玩弄一下他",
           next: "end2"
         },
         {
           id: "right_count",
-          label: "数对",
+          label: "老老实实勤勤恳恳",
           next: "end3"
         }
       ]
@@ -106,21 +107,21 @@ export const story = {
       id: "end5",
       kind: "ending",
       image: "assets/images/end5.png",
-      text: "用户狂干到晕倒。结局：你被收拾东西的人扔进垃圾桶。",
+      text: "过度运行，你炸了！",
       next: null
     },
     {
       id: "end2",
       kind: "ending",
       image: "assets/images/end2.png",
-      text: "你故意数错。用户崩溃了，并开始怀疑数学也在针对自己。",
+      text: "你故意数错。用户崩溃了，并开始怀疑自己。",
       next: null
     },
     {
       id: "end3",
       kind: "ending",
       image: "assets/images/end3.jpg",
-      text: "用户睡了。你决定暂时不群发任何东西。",
+      text: "用户睡着了。你觉得自己好像一台真正的助眠设备了。",
       next: null
     }
   ]

@@ -1,7 +1,8 @@
 export class AudioManager {
-  constructor({ masterVolume = 1, bgmVolume = 0.35 } = {}) {
+  constructor({ masterVolume = 1, bgmVolume = 0.6, sfxVolume = 0.9 } = {}) {
     this.masterVolume = masterVolume;
     this.bgmVolume = bgmVolume;
+    this.sfxVolume = sfxVolume;
     this.muted = false;
     this.unlocked = false;
 
@@ -9,6 +10,8 @@ export class AudioManager {
     this.currentBgmSrc = null;
     this.currentBgmBaseVolume = null;
     this.fadeTimer = null;
+
+    this.sfxCache = new Map();
   }
 
   unlock() {
@@ -21,11 +24,18 @@ export class AudioManager {
     }
   }
 
-  playBgm(src, { loop = true, fadeMs = 600, volume } = {}) {
+  _resolveEntry(entry) {
+    if (!entry) return { src: null, volume: undefined };
+    if (typeof entry === "string") return { src: entry, volume: undefined };
+    return { src: entry.src ?? null, volume: entry.volume };
+  }
+
+  playBgm(entry, { loop = true, fadeMs = 600, volume } = {}) {
+    const { src, volume: entryVolume } = this._resolveEntry(entry);
     if (!src || this.currentBgmSrc === src) return;
     if (typeof Audio === "undefined") return;
 
-    const baseVolume = volume ?? this.bgmVolume;
+    const baseVolume = volume ?? entryVolume ?? this.bgmVolume;
     const targetVolume = baseVolume * this.masterVolume;
     const next = new Audio(src);
     next.loop = loop;
@@ -68,6 +78,29 @@ export class AudioManager {
       prev.pause();
       prev.src = "";
     });
+  }
+
+  playSfx(entry, { volume } = {}) {
+    const { src, volume: entryVolume } = this._resolveEntry(entry);
+    if (!src || this.muted) return;
+    if (typeof Audio === "undefined") return;
+
+    const baseVolume = volume ?? entryVolume ?? this.sfxVolume;
+    const targetVolume = baseVolume * this.masterVolume;
+
+    let template = this.sfxCache.get(src);
+    if (!template) {
+      template = new Audio(src);
+      template.preload = "auto";
+      this.sfxCache.set(src, template);
+    }
+
+    const instance = template.cloneNode();
+    instance.volume = Math.max(0, Math.min(1, targetVolume));
+    const playPromise = instance.play();
+    if (playPromise) {
+      playPromise.catch((err) => console.warn("[AudioManager] SFX 播放被拒:", src, err.message));
+    }
   }
 
   setMasterVolume(value) {

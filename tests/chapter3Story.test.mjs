@@ -13,6 +13,7 @@ test("chapter three starts at the alarm clock scene and opens the three media ch
   assert.equal(flow.currentNode.id, "node1");
   assert.equal(flow.currentNode.kind, "scene");
   assert.equal(flow.currentNode.image, chapter3Asset("node1.png"));
+  assert.equal(flow.currentNode.text, "闹钟叫碳基生物起床");
 
   const choiceNode = flow.advance();
   assert.equal(choiceNode.id, "node1_choice");

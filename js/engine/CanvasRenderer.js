@@ -1,6 +1,8 @@
 import { getContainRect, getSplashAnimationFrame } from "./SplashScreen.js";
 import { getChoiceRects } from "./ChoiceLayout.js";
 import { getEndingCardRect } from "./EndingCard.js";
+import { getExitButtonRect } from "./ExitButton.js";
+import { getShareCardButtonRects, getShareCardImageRect } from "./ShareCard.js";
 
 export class CanvasRenderer {
   constructor(canvas, config) {
@@ -56,6 +58,30 @@ export class CanvasRenderer {
     ctx.restore();
 
     return choiceRects;
+  }
+
+  renderExitButton({ elapsed }) {
+    const ctx = this.ctx;
+    const width = this.config.canvasWidth;
+    const rect = getExitButtonRect(width, this.config.canvasHeight);
+    const alpha = 0.72 + Math.sin(elapsed / 400) * 0.12;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(10, 12, 18, 0.72)";
+    this.roundRect(ctx, rect.x, rect.y, rect.width, rect.height, 6);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(255, 231, 106, ${alpha})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = `rgba(255, 231, 106, ${alpha})`;
+    ctx.font = "900 15px Microsoft YaHei, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("退出", rect.x + rect.width / 2, rect.y + rect.height / 2);
+    ctx.restore();
+
+    return rect;
   }
 
   renderSplash({ elapsed }) {
@@ -126,6 +152,71 @@ export class CanvasRenderer {
 
     items.forEach((item, index) => this.drawChapterMenuItem(ctx, item, index, elapsed));
     this.drawTvTextureOverlay(ctx, width, height, getSplashAnimationFrame(elapsed), 0.5);
+  }
+
+  renderIntro({ intro, elapsed }) {
+    const ctx = this.ctx;
+    const width = this.config.canvasWidth;
+    const height = this.config.canvasHeight;
+    const video = intro?.video;
+
+    ctx.clearRect(0, 0, width, height);
+
+    if (video && (video.readyState >= 2 || video.videoWidth || video.width)) {
+      this.drawCoverMedia(ctx, video, 0, 0, width, height);
+    } else {
+      this.drawLoading(ctx, "视频加载中", width, height);
+    }
+
+    this.drawTvTextureOverlay(ctx, width, height, getSplashAnimationFrame(elapsed), 0.32);
+    if (intro?.continueOnTap) {
+      this.drawTapPanel(ctx, "点击进入章节菜单", width, height, elapsed);
+    }
+  }
+
+  renderShareCard({ shareCard, elapsed }) {
+    const ctx = this.ctx;
+    const width = this.config.canvasWidth;
+    const height = this.config.canvasHeight;
+    const imageState = this.getImage(shareCard?.image);
+    const imageRect = getShareCardImageRect(width, height);
+    const buttonRects = getShareCardButtonRects(width, height);
+
+    ctx.clearRect(0, 0, width, height);
+    if (this.startImage.loaded) {
+      this.drawBlurredBackdrop(ctx, this.startImage.image, width, height, 0.66);
+    } else {
+      ctx.fillStyle = "#121820";
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    ctx.save();
+    ctx.fillStyle = "rgba(10, 12, 18, 0.78)";
+    this.roundRect(ctx, imageRect.x - 12, imageRect.y - 12, imageRect.width + 24, imageRect.height + 24, 8);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255, 231, 106, 0.86)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+
+    if (imageState.loaded) {
+      this.drawContainImageInRect(ctx, imageState.image, imageRect);
+    } else {
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 247, 198, 0.12)";
+      this.roundRect(ctx, imageRect.x, imageRect.y, imageRect.width, imageRect.height, 6);
+      ctx.fill();
+      ctx.fillStyle = "#fff0a8";
+      ctx.font = "900 20px Microsoft YaHei, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("分享卡片加载中", width / 2, imageRect.y + imageRect.height / 2);
+      ctx.restore();
+    }
+
+    this.drawShareCardButtons(ctx, buttonRects, elapsed);
+    this.drawTvTextureOverlay(ctx, width, height, getSplashAnimationFrame(elapsed), 0.28);
+    return buttonRects;
   }
 
   drawChapterMenuItem(ctx, item, index, elapsed) {
@@ -259,6 +350,26 @@ export class CanvasRenderer {
     });
   }
 
+  drawShareCardButtons(ctx, rects, elapsed) {
+    rects.forEach((rect, index) => {
+      const alpha = 0.76 + Math.sin(elapsed / 360 + index) * 0.12;
+      ctx.save();
+      ctx.fillStyle = rect.id === "share" ? "rgba(255, 231, 106, 0.94)" : "rgba(255, 247, 198, 0.9)";
+      this.roundRect(ctx, rect.x, rect.y, rect.width, rect.height, 7);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(18, 18, 18, ${alpha})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.fillStyle = "#111111";
+      ctx.font = "900 18px Microsoft YaHei, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(rect.label, rect.x + rect.width / 2, rect.y + rect.height / 2);
+      ctx.restore();
+    });
+  }
+
   drawCaption(ctx, text, hint, width, height, elapsed) {
     ctx.save();
     ctx.fillStyle = "rgba(10, 12, 18, 0.84)";
@@ -335,6 +446,16 @@ export class CanvasRenderer {
     ctx.drawImage(image, rect.x, rect.y, rect.width, rect.height);
   }
 
+  drawContainImageInRect(ctx, image, targetRect) {
+    const rect = getContainRect({
+      sourceWidth: image.width,
+      sourceHeight: image.height,
+      targetWidth: targetRect.width,
+      targetHeight: targetRect.height
+    });
+    ctx.drawImage(image, targetRect.x + rect.x, targetRect.y + rect.y, rect.width, rect.height);
+  }
+
   drawBlurredBackdrop(ctx, image, width, height, overlayAlpha) {
     ctx.save();
     ctx.filter = "blur(12px)";
@@ -361,6 +482,27 @@ export class CanvasRenderer {
     }
 
     ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+  }
+
+  drawCoverMedia(ctx, media, x, y, width, height) {
+    const mediaWidth = media.videoWidth || media.width || width;
+    const mediaHeight = media.videoHeight || media.height || height;
+    const mediaRatio = mediaWidth / mediaHeight;
+    const targetRatio = width / height;
+    let sourceX = 0;
+    let sourceY = 0;
+    let sourceWidth = mediaWidth;
+    let sourceHeight = mediaHeight;
+
+    if (mediaRatio > targetRatio) {
+      sourceWidth = mediaHeight * targetRatio;
+      sourceX = (mediaWidth - sourceWidth) / 2;
+    } else {
+      sourceHeight = mediaWidth / targetRatio;
+      sourceY = (mediaHeight - sourceHeight) / 2;
+    }
+
+    ctx.drawImage(media, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
   }
 
   drawTvTextureOverlay(ctx, width, height, frame, intensity = 1) {

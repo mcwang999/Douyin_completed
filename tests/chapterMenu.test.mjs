@@ -45,6 +45,12 @@ test("chapter two starts from node1", () => {
   assert.equal(chapter.story.startNodeId, "node1");
 });
 
+test("chapter three menu subtitle describes the alarm clock", () => {
+  const chapter = getChapterById("chapter3");
+
+  assert.equal(chapter.subtitle, "闹钟：叫碳基生物起床");
+});
+
 test("chapter two uses chapter scoped image assets", () => {
   const chapter = getChapterById("chapter2");
   const intro = chapter.story.nodes.find((node) => node.id === "node1");

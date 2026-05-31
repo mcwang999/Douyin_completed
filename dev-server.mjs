@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 
 const root = process.cwd();
-const port = Number(process.env.PORT || 5173);
+const port = Number(process.env.PORT || 5174);
 const host = "127.0.0.1";
 
 const mimeTypes = {
