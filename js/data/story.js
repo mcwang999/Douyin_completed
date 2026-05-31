@@ -21,7 +21,7 @@ export const story = {
         },
         {
           id: "black_screen",
-          label: "主机断电黑屏",
+          label: "默默黑屏",
           next: "node2_2"
         },
         {
@@ -50,7 +50,7 @@ export const story = {
       id: "node2_2",
       kind: "scene",
       image: "assets/images/node2_2.png",
-      text: "用户与你眉目传情，此时屏幕显示",
+      text: "用户与你眉目传情，此时屏幕重新显示",
       next: "sleep_choice"
     },
     {
