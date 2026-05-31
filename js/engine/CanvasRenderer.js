@@ -19,9 +19,17 @@ export class CanvasRenderer {
   }
 
   resize() {
-    this.canvas.width = this.config.canvasWidth * this.pixelRatio;
-    this.canvas.height = this.config.canvasHeight * this.pixelRatio;
-    this.ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    this.scaleX = w / this.config.canvasWidth;
+    this.scaleY = h / this.config.canvasHeight;
+    this.canvas.width = w * this.pixelRatio;
+    this.canvas.height = h * this.pixelRatio;
+    this.ctx.setTransform(
+      this.pixelRatio * this.scaleX, 0,
+      0, this.pixelRatio * this.scaleY,
+      0, 0
+    );
   }
 
   captureSnapshot() {

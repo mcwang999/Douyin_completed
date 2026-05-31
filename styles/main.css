@@ -31,10 +31,8 @@ button {
 }
 
 #gameCanvas {
-  width: min(100vw, calc(100vh * 941 / 1672), 480px);
-  height: auto;
-  max-height: 100vh;
-  aspect-ratio: 941 / 1672;
+  width: 100vw;
+  height: 100dvh;
   display: block;
   background: #10131a;
   touch-action: none;
